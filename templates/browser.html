@@ -11,12 +11,30 @@
         a:hover { text-decoration: underline; }
         .dir { font-weight: bold; }
         .file { color: #28a745; }
-        .back-link { margin-bottom: 20px; }
+        .back-link { margin-bottom: 10px; }
+        .actions { margin-bottom: 20px; }
+        .actions button, .actions input[type="submit"] {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .actions #confirm-btn { background-color: #28a745; color: white; }
+        .actions #create-btn { background-color: #007bff; color: white; }
     </style>
 </head>
 <body>
     <h1>File Browser</h1>
-    <p>Current Path: {{ current_path }}</p>
+    <p>Current Path: <span id="current-path-display">{{ current_path }}</span></p>
+
+    <div class="actions">
+        <button id="confirm-btn">Confirm This Path</button>
+        <form action="{{ url_for('create_folder') }}" method="post" style="display: inline-block;">
+            <input type="hidden" name="path" value="{{ path }}">
+            <input type="text" name="folder_name" placeholder="New folder name" required>
+            <input type="submit" id="create-btn" value="Create">
+        </form>
+    </div>
 
     {% if path %}
     <div class="back-link">
@@ -32,5 +50,17 @@
             <li class="file">{{ file }}</li>
         {% endfor %}
     </ul>
+
+    <script>
+        document.getElementById('confirm-btn').addEventListener('click', function() {
+            var path = document.getElementById('current-path-display').innerText;
+            try {
+                window.opener.document.getElementById('path').value = path;
+                window.close();
+            } catch (e) {
+                alert("Could not update path. Please copy it manually.");
+            }
+        });
+    </script>
 </body>
 </html>
