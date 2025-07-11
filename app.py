@@ -5,8 +5,8 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/browse')
-def browse():
+@app.route('/api/browse')
+def api_browse():
     # Set the root for browsing to /home for Linux, or user's home for other OS
     root = '/home' if os.name != 'nt' else os.path.expanduser('~')
     
@@ -15,7 +15,7 @@ def browse():
 
     # Security check to prevent directory traversal attacks
     if not os.path.abspath(current_path).startswith(os.path.abspath(root)):
-        return "Invalid path", 400
+        return jsonify({"error": "Invalid path"}), 400
 
     dirs = []
     files = []
@@ -27,7 +27,7 @@ def browse():
                 else:
                     files.append(item)
     except FileNotFoundError:
-        return "Directory not found", 404
+        return jsonify({"error": "Directory not found"}), 404
     
     dirs.sort()
     files.sort()
@@ -35,31 +35,37 @@ def browse():
     # The parent path is the relative path from the root
     parent_path = os.path.relpath(os.path.dirname(current_path), root) if path and os.path.abspath(current_path) != os.path.abspath(root) else ''
 
-    return render_template('browser.html', path=path, dirs=dirs, files=files, parent_path=parent_path, current_path=current_path)
+    return jsonify({
+        "path": path,
+        "dirs": dirs,
+        "files": files,
+        "parent_path": parent_path,
+        "current_path": current_path
+    })
 
-@app.route('/create_folder', methods=['POST'])
-def create_folder():
+@app.route('/api/create_folder', methods=['POST'])
+def api_create_folder():
     root = '/home' if os.name != 'nt' else os.path.expanduser('~')
     path = request.form.get('path', '')
     folder_name = request.form.get('folder_name')
     
     if not folder_name or '/' in folder_name or '..' in folder_name:
-        return "Invalid folder name", 400
+        return jsonify({"error": "Invalid folder name"}), 400
 
     current_path = os.path.join(root, path)
     
     # Security check
     if not os.path.abspath(current_path).startswith(os.path.abspath(root)):
-        return "Invalid path", 400
+        return jsonify({"error": "Invalid path"}), 400
 
     try:
         os.makedirs(os.path.join(current_path, folder_name))
     except FileExistsError:
-        return "Folder already exists", 400
+        return jsonify({"error": "Folder already exists"}), 400
     except Exception as e:
-        return f"Error creating folder: {e}", 500
+        return jsonify({"error": f"Error creating folder: {e}"}), 500
 
-    return redirect(url_for('browse', path=path))
+    return jsonify({"success": True})
 
 
 @app.route('/', methods=['GET', 'POST'])
