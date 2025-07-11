@@ -1,0 +1,58 @@
+<!doctype html>
+<title>Upload new File</title>
+<h1>Upload new File</h1>
+<form method=post enctype=multipart/form-data>
+  <p>
+    <label for="path">Path to store file:</label>
+    <input type="text" name="path" id="path" value="uploads">
+  </p>
+  <p>
+    <input type=file name=file>
+    <input type=submit value=Upload>
+  </p>
+</form>
+<style>
+#drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 20px;
+  width: 300px;
+  height: 200px;
+  padding: 20px;
+  text-align: center;
+  font: 20pt bold 'Vollkorn';
+  color: #ccc;
+}
+#drop-zone.dragover {
+  border-color: #000;
+  color: #000;
+}
+</style>
+<div id="drop-zone">Drop files here</div>
+<script>
+var dropZone = document.getElementById('drop-zone');
+var uploadForm = document.querySelector('form');
+
+dropZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  dropZone.classList.remove('dragover');
+
+  var files = e.dataTransfer.files;
+  if (files.length > 0) {
+    uploadForm.elements.file.files = files;
+    uploadForm.submit();
+  }
+});
+</script>
