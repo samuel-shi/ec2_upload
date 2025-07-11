@@ -7,13 +7,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/browse')
 def browse():
-    # Use the current working directory as the root for browsing
-    root = os.getcwd()
+    # Set the root for browsing to /home for Linux, or user's home for other OS
+    root = '/home' if os.name != 'nt' else os.path.expanduser('~')
+    
     path = request.args.get('path', '')
     current_path = os.path.join(root, path)
 
     # Security check to prevent directory traversal attacks
-    if not os.path.abspath(current_path).startswith(root):
+    if not os.path.abspath(current_path).startswith(os.path.abspath(root)):
         return "Invalid path", 400
 
     dirs = []
@@ -32,9 +33,9 @@ def browse():
     files.sort()
     
     # The parent path is the relative path from the root
-    parent_path = os.path.relpath(os.path.dirname(current_path), root) if path else ''
+    parent_path = os.path.relpath(os.path.dirname(current_path), root) if path and os.path.abspath(current_path) != os.path.abspath(root) else ''
 
-    return render_template('browser.html', path=path, dirs=dirs, files=files, parent_path=parent_path)
+    return render_template('browser.html', path=path, dirs=dirs, files=files, parent_path=parent_path, current_path=current_path)
 
 
 @app.route('/', methods=['GET', 'POST'])
