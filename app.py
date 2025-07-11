@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, render_template, send_from_directory, jsonify, redirect, url_for
+from flask import Flask, request, render_template, send_from_directory, jsonify, redirect, url_for, redirect, url_for
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -67,6 +67,26 @@ def api_create_folder():
 
     return jsonify({"success": True})
 
+@app.route('/api/download')
+def api_download():
+    root = '/home' if os.name != 'nt' else os.path.expanduser('~')
+    path = request.args.get('path', '')
+    filename = request.args.get('filename')
+    
+    if not filename:
+        return "Filename is required", 400
+    
+    file_path = os.path.join(root, path, filename)
+    
+    # Security check
+    if not os.path.abspath(file_path).startswith(os.path.abspath(root)):
+        return "Invalid path", 400
+    
+    if not os.path.exists(file_path) or not os.path.isfile(file_path):
+        return "File not found", 404
+    
+    directory = os.path.dirname(file_path)
+    return send_from_directory(directory, filename, as_attachment=True)
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():

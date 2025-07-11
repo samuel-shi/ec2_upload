@@ -215,14 +215,40 @@
 
         .file {
             color: #059669;
-            display: block;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 8px 12px;
             margin: 2px 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
         }
 
-        .file:before {
+        .file-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-name:before {
             content: "📄 ";
             margin-right: 8px;
+        }
+
+        .download-btn {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
         }
 
         #drop-zone {
@@ -377,7 +403,10 @@ function loadDirectory(path) {
             });
             
             data.files.forEach(function(file) {
-                content += '<span class="file">' + file + '</span><br>';
+                content += '<div class="file">';
+                content += '<span class="file-name">' + file + '</span>';
+                content += '<button class="download-btn" onclick="downloadFile(\'' + file + '\')">⬇️ Download</button>';
+                content += '</div>';
             });
             
             document.getElementById('browser-content').innerHTML = content;
@@ -412,6 +441,16 @@ function createFolder() {
             alert('Error creating folder');
         }
     });
+}
+
+function downloadFile(filename) {
+    var downloadUrl = '/api/download?path=' + encodeURIComponent(currentPath) + '&filename=' + encodeURIComponent(filename);
+    var link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 var dropZone = document.getElementById('drop-zone');
