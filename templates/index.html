@@ -1,78 +1,350 @@
 <!doctype html>
+<html lang="en">
 <head>
-    <title>Upload new File</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EC2 File Upload</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .file-browser { 
-            border: 1px solid #ccc; 
-            padding: 20px; 
-            margin: 20px 0; 
-            max-height: 400px; 
-            overflow-y: auto; 
-            background-color: #f9f9f9;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .file-browser ul { list-style-type: none; padding-left: 20px; }
-        .file-browser li { margin: 5px 0; }
-        .file-browser a { text-decoration: none; color: #007bff; cursor: pointer; }
-        .file-browser a:hover { text-decoration: underline; }
-        .dir { font-weight: bold; }
-        .file { color: #28a745; }
-        .actions { margin: 10px 0; }
-        .actions button, .actions input[type="submit"] {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .actions .confirm-btn { background-color: #28a745; color: white; }
-        .actions .create-btn { background-color: #007bff; color: white; }
-        .browse-toggle { background-color: #6c757d; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; }
-        #drop-zone {
-            border: 2px dashed #ccc;
-            border-radius: 20px;
-            width: 300px;
-            height: 200px;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            text-align: center;
-            font: 20pt bold 'Vollkorn';
-            color: #ccc;
         }
-        #drop-zone.dragover {
-            border-color: #000;
-            color: #000;
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(107, 114, 128, 0.3);
+        }
+
+        .file-input-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .file-browser {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .file-browser h3 {
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .current-path {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+        }
+
+        .browser-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .create-folder-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .create-folder-form input {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .browser-content a {
+            display: block;
+            padding: 8px 12px;
+            margin: 2px 0;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .browser-content a:hover {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dir {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .dir:before {
+            content: "📁 ";
+            margin-right: 8px;
+        }
+
+        .file {
+            color: #059669;
+            display: block;
+            padding: 8px 12px;
+            margin: 2px 0;
+        }
+
+        .file:before {
+            content: "📄 ";
+            margin-right: 8px;
+        }
+
+        #drop-zone {
+            border: 3px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            margin: 25px 0;
+        }
+
+        #drop-zone:hover, #drop-zone.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .drop-zone-content {
+            color: #6b7280;
+            font-size: 1.2rem;
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-with-button {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .file-input-section {
+                flex-direction: column;
+            }
+            
+            .browser-actions {
+                flex-direction: column;
+            }
+            
+            .create-folder-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
-<body>
-<h1>Upload new File</h1>
-
-<div id="file-browser-container" style="display: none;">
-    <h3>File Browser</h3>
-    <div class="file-browser">
-        <p>Current Path: <span id="current-path-display">/home</span></p>
-        <div class="actions">
-            <button class="confirm-btn" onclick="confirmPath()">Confirm This Path</button>
-            <input type="text" id="new-folder-name" placeholder="New folder name">
-            <button class="create-btn" onclick="createFolder()">Create Folder</button>
+<<body>
+    <div class="container">
+        <div class="header">
+            <h1>EC2 File Upload</h1>
+            <p>Drag, drop, or browse to upload files to your EC2 instance</p>
         </div>
-        <div id="browser-content">
-            <!-- Directory content will be loaded here -->
+
+        <div class="content">
+            <div id="file-browser-container" style="display: none;">
+                <div class="file-browser">
+                    <h3>📁 File Browser</h3>
+                    <div class="current-path">
+                        Current Path: <span id="current-path-display">/home</span>
+                    </div>
+                    <div class="browser-actions">
+                        <button class="btn btn-success" onclick="confirmPath()">✅ Confirm This Path</button>
+                        <div class="create-folder-form">
+                            <input type="text" id="new-folder-name" placeholder="New folder name">
+                            <button class="btn btn-primary" onclick="createFolder()">📁 Create Folder</button>
+                        </div>
+                    </div>
+                    <div class="browser-content" id="browser-content">
+                        <!-- Directory content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="path">📂 Destination Path</label>
+                        <div class="input-with-button">
+                            <input type="text" name="path" id="path" value="uploads" placeholder="Enter the path where files should be stored">
+                            <button type="button" class="btn btn-secondary" onclick="toggleBrowser()">🔍 Browse</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📎 Select File</label>
+                        <div class="file-input-section">
+                            <input type="file" name="file" required>
+                            <button type="submit" class="btn btn-primary">⬆️ Upload</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="drop-zone">
+                    <div class="drop-zone-content">
+                        <span class="drop-zone-icon">📤</span>
+                        <div>Drop files here to upload</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-
-<form method=post enctype=multipart/form-data>
-  <p>
-    <label for="path">Path to store file:</label>
-    <input type="text" name="path" id="path" value="uploads">
-    <button type="button" class="browse-toggle" onclick="toggleBrowser()">Browse</button>
-  </p>
-  <p>
-    <input type=file name=file>
-    <input type=submit value=Upload>
-  </p>
-</form>
 <div id="drop-zone">Drop files here</div>
 <script>
 var currentPath = '';
