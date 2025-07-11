@@ -1,9 +1,41 @@
 import os
-from flask import Flask, request, render_template, send_from_directory
+from flask import Flask, request, render_template, send_from_directory, jsonify
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/browse')
+def browse():
+    # Use the current working directory as the root for browsing
+    root = os.getcwd()
+    path = request.args.get('path', '')
+    current_path = os.path.join(root, path)
+
+    # Security check to prevent directory traversal attacks
+    if not os.path.abspath(current_path).startswith(root):
+        return "Invalid path", 400
+
+    dirs = []
+    files = []
+    try:
+        if os.path.isdir(current_path):
+            for item in os.listdir(current_path):
+                if os.path.isdir(os.path.join(current_path, item)):
+                    dirs.append(item)
+                else:
+                    files.append(item)
+    except FileNotFoundError:
+        return "Directory not found", 404
+    
+    dirs.sort()
+    files.sort()
+    
+    # The parent path is the relative path from the root
+    parent_path = os.path.relpath(os.path.dirname(current_path), root) if path else ''
+
+    return render_template('browser.html', path=path, dirs=dirs, files=files, parent_path=parent_path)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():

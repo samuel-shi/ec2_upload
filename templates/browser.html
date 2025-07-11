@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Browser</title>
+    <style>
+        body { font-family: sans-serif; }
+        ul { list-style-type: none; padding-left: 20px; }
+        li { margin: 5px 0; }
+        a { text-decoration: none; color: #007bff; }
+        a:hover { text-decoration: underline; }
+        .dir { font-weight: bold; }
+        .file { color: #28a745; }
+        .back-link { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>File Browser</h1>
+    <p>Current Path: /{{ path }}</p>
+
+    {% if path %}
+    <div class="back-link">
+        <a href="{{ url_for('browse', path=parent_path) }}">.. (Parent Directory)</a>
+    </div>
+    {% endif %}
+
+    <ul>
+        {% for dir in dirs %}
+            <li><a href="{{ url_for('browse', path=path + '/' + dir if path else dir) }}" class="dir">{{ dir }}/</a></li>
+        {% endfor %}
+        {% for file in files %}
+            <li class="file">{{ file }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
